@@ -1,6 +1,6 @@
 # Guardian
 
-Simple validation library that allows you to centralize all validations for an Object.
+Simple validation library that allows you to centralize all Apex validations for an Object.
 
 ## ValidationRule
 
