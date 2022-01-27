@@ -1,18 +1,79 @@
-# Salesforce DX Project: Next Steps
+# Guardian
 
-Now that you’ve created a Salesforce DX project, what’s next? Here are some documentation resources to get you started.
+Simple validation library that allows you to centralize all validations for an Object.
 
-## How Do You Plan to Deploy Your Changes?
+## ValidationRule
 
-Do you want to deploy a set of changes, or create a self-contained application? Choose a [development model](https://developer.salesforce.com/tools/vscode/en/user-guide/development-models).
 
-## Configure Your Salesforce DX Project
+```apex
+public class AgeMustBe20OrGreater implements Guardian.IValidationRule {
+  String getErrorMessage() {
+    return 'Age must be >= 20';
+  }
+  
+  Boolean validate(Object subject, Map<String, Object> args) {
+    Map<String, Object> subjectRecord = (Map<String, Object>)subject;
+    Integer subjectAge = (Integer)subjectRecord.get('Age');
+    
+    return subjectAge >= 20;
+  }
+}
+```
 
-The `sfdx-project.json` file contains useful configuration information for your project. See [Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm) in the _Salesforce DX Developer Guide_ for details about this file.
+## ValidationRuleSet
 
-## Read All About It
+```apex
+public class SuperValidationRuleSet extends Guardian.ValidationRuleSet {
+  Set<System.Type> getValidationRules() {
+    return new Set<System.Type>{
+        AgeMustBe20OrGreater.class
+    };
+  }
+}
+```
 
-- [Salesforce Extensions Documentation](https://developer.salesforce.com/tools/vscode/)
-- [Salesforce CLI Setup Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm)
-- [Salesforce DX Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_intro.htm)
-- [Salesforce CLI Command Reference](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference.htm)
+### Run your validations with the `ValidationRuleSet.validate` method
+
+#### Arguments
+* Object subject - The object to be validated
+* Map<String, Object> args - Key/Value args that will be passed into every `ValidationRule`.  
+  Only required if a `ValiationRule` depends on it.
+
+#### Returns
+* `Guardian.ValidationResult`
+  * `hasInvalid` - Boolean
+  * `validSubjects` - List of subjects that passed every `ValidationRule`
+  * `invalidSubjects` - List of subjects that failed one or more `ValidationRule`
+    * Each subject is wrapped in the `Guardian.Invalid` object that provides the validation error 
+      messages
+
+#### Method Variations
+
+* `validate(Object subject)`
+
+* `validate(Object subject, Map<String, Object> args)`
+
+* `validate(List<Object> subjects)`
+
+* `validate(List<Object>, Map<String, Object> args)`
+
+### How to use
+```apex
+public class RandomCaller {
+  public static void awesomeMethod(List<SObject> records) {
+    Guardian.ValidationRuleSet ruleSet = new SuperValidationRuleSet();
+    Guardian.ValidationResult validationResult = ruleSet.validate(records);
+    
+    SomeOtherClass.processValidRecords(validationResult.validSubjects);
+    
+    if(validationResult.hasInvalid) {
+      List<Guardian.Invalid> invalidSubjects = validationResult.invalidSubjects;
+      
+      for(Guardian.Invalid invalidSubject : invalidSubjects) {
+        System.debug(invalidSubject.errors)
+      }
+    }
+    
+  }
+}
+```
