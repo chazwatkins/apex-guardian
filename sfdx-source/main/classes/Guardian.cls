@@ -1,56 +1,87 @@
-public abstract class Guardian {
-
-  abstract Set<System.Type> getValidationRules();
-
-  public Set<System.Type> validationRules {
-    get {
-      return getValidationRules();
-    }
-    private set;
+public class Guardian {
+  public static Set<System.Type> getValidationRuleSets() {
+    return GuardianSelector.selectValidationRuleSets();
   }
 
-  Set<IValidationRule> validationRulesInstances {
-    get {
-      Set<IValidationRule> rules = new Set<IValidationRule>();
-      for(System.Type ruleType : this.getValidationRules()) {
-        IValidationRule rule = (IValidationRule) ruleType.newInstance();
-        rules.add(rule);
+  public static Set<System.Type> getValidationRules() {
+    return GuardianSelector.selectValidationRules();
+  }
+
+  public class NoValidationRulesException extends Exception {
+    public override String getMessage() {
+      return 'No ValidationRules provided.  Everything is welcome.';
+    }
+  }
+
+  public abstract class ValidationRuleSet {
+    Boolean hasValidationRules {
+      get {
+        return !this.getValidationRules().isEmpty();
+      }
+      private set;
+    }
+
+    @TestVisible
+    abstract Set<System.Type> getValidationRules();
+
+    public ValidationResult validate(Object recordToValidate) {
+      return this.validate(recordToValidate, new Map<String, Object>());
+    }
+
+    public ValidationResult validate(
+      Object recordToValidate,
+      Map<String, Object> args
+    ) {
+      return this.validate(new List<Object>{ recordToValidate }, args);
+    }
+
+    public ValidationResult validate(List<Object> recordsToValidate) {
+      return this.validate(recordsToValidate, new Map<String, Object>());
+    }
+
+    public ValidationResult validate(
+      List<Object> subjects,
+      Map<String, Object> args
+    ) {
+      if (!this.hasValidationRules) {
+        throw new NoValidationRulesException();
       }
 
-      return rules;
-    }
-    private set;
-  }
+      ValidationResult validationResult = new ValidationResult();
+      Set<IValidationRule> validationRuleInstances = this.validationRulesInstances;
 
-  public ValidationResult validate(Object recordToValidate) {
-    return this.validate(recordToValidate, null);
-  }
+      for (Object subject : subjects) {
+        SubjectValidationResult validation = new SubjectValidationResult(
+          subject
+        );
+        validation.runValidations(args, validationRuleInstances);
 
-  public ValidationResult validate(Object recordToValidate, Object args) {
-    return this.validate(new List<Object>{recordToValidate}, args);
-  }
-
-  public ValidationResult validate(List<Object> recordsToValidate) {
-    return this.validate(recordsToValidate, null);
-  }
-
-  public ValidationResult validate(List<Object> subjects, Object args) {
-    ValidationResult validationResult = new ValidationResult();
-    Set<IValidationRule> validationRuleInstances = this.validationRulesInstances;
-
-    for(Object subject : subjects) {
-      SubjectValidationResult validation = new SubjectValidationResult(subject);
-      validation.runValidations(args, validationRuleInstances);
-
-      if(validation.hasErrors) {
-        Invalid invalidSubject = new Invalid(validation.subject, validation.errors);
-        validationResult.addInvalidRecord(invalidSubject);
-      } else {
-        validationResult.addValidRecord(subject);
+        if (validation.hasErrors) {
+          Invalid invalidSubject = new Invalid(
+            validation.subject,
+            validation.errors
+          );
+          validationResult.addInvalidRecord(invalidSubject);
+        } else {
+          validationResult.addValidRecord(subject);
+        }
       }
+
+      return validationResult;
     }
 
-    return validationResult;
+    private Set<IValidationRule> validationRulesInstances {
+      get {
+        Set<IValidationRule> rules = new Set<IValidationRule>();
+        for (System.Type ruleType : this.getValidationRules()) {
+          IValidationRule rule = (IValidationRule) ruleType.newInstance();
+          rules.add(rule);
+        }
+
+        return rules;
+      }
+      private set;
+    }
   }
 
   public class ValidationResult {
@@ -68,16 +99,16 @@ public abstract class Guardian {
       this.invalidSubjects = new List<Invalid>();
     }
 
-    public void addValidRecord(Object subject) {
+    void addValidRecord(Object subject) {
       this.validSubjects.add(subject);
     }
 
-    public void addInvalidRecord(Invalid record) {
+    void addInvalidRecord(Invalid record) {
       this.invalidSubjects.add(record);
     }
   }
 
-  class SubjectValidationResult {
+  private class SubjectValidationResult {
     public Object subject { get; private set; }
     public List<String> errors { get; private set; }
     Boolean hasErrors {
@@ -92,16 +123,15 @@ public abstract class Guardian {
       this.errors = new List<String>();
     }
 
-    void runValidations(Object args, Set<IValidationRule> rules) {
-      for(IValidationRule rule : rules) {
+    void runValidations(Map<String, Object> args, Set<IValidationRule> rules) {
+      for (IValidationRule rule : rules) {
         Boolean isValid = rule.validate(this.subject, args);
 
-        if(!isValid) {
+        if (!isValid) {
           this.errors.add(rule.getErrorMessage());
         }
       }
     }
-
   }
 
   public class Invalid {
@@ -116,7 +146,6 @@ public abstract class Guardian {
 
   public interface IValidationRule {
     String getErrorMessage();
-    Boolean validate(Object subject, Object args);
+    Boolean validate(Object subject, Map<String, Object> args);
   }
-  public class GuardianException extends Exception {}
 }

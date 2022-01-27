@@ -3,7 +3,7 @@
   <component name="FacetManager">
     <facet type="IlluminatedCloud" name="Illuminated Cloud">
       <configuration>
-        <option name="connectionName" value="ericssonUAT" />
+        <option name="connectionName" value="uat" />
         <option name="connectionType" value="OAUTH" />
         <option name="moduleContents">
           <ModuleContents>
@@ -22,7 +22,7 @@
       <sourceFolder url="file://$MODULE_DIR$/sfdx-source/main" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/sfdx-source/test" isTestSource="true" />
     </content>
-    <orderEntry type="jdk" jdkName="IlluminatedCloud (elib-validator/ericssonUAT)" jdkType="IlluminatedCloud" />
+    <orderEntry type="jdk" jdkName="IlluminatedCloud (apex-guardian/uat)" jdkType="IlluminatedCloud" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

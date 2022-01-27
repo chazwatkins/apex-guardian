@@ -1,13 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <project version="4">
   <component name="IlluminatedCloudSettings">
     <option name="connections">
       <list>
         <IlluminatedCloudConnection>
-          <option name="connectionName" value="ericssonUAT" />
+          <option name="connectionName" value="uat" />
           <option name="connectionType" value="OAUTH" />
-          <option name="defaultModuleName" value="elib-validator" />
-          <option name="offlineSymbolTablePath" value="$PROJECT_DIR$/IlluminatedCloud/ericssonUAT/OfflineSymbolTable.zip" />
+          <option name="defaultModuleName" value="apex-guardian" />
+          <option
+            name="offlineSymbolTablePath"
+            value="$PROJECT_DIR$/IlluminatedCloud/uat/OfflineSymbolTable.zip"
+          />
         </IlluminatedCloudConnection>
       </list>
     </option>

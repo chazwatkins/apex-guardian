@@ -43,3 +43,8 @@ $RECYCLE.BIN/
 /IlluminatedCloud/
 /out/
 target/
+/.idea/
+/.husky/
+/.sfdx/
+/manifest/
+/node_modules/
