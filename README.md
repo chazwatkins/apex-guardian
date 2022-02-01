@@ -2,7 +2,7 @@
 
 Simple validation library that allows you to centralize all Apex validations for an Object.
 
-## ValidationRule
+## `Guardian.IRule`
 
 ```apex
 public class AgeMustBe20OrGreater implements Guardian.IRule {
@@ -19,7 +19,7 @@ public class AgeMustBe20OrGreater implements Guardian.IRule {
 }
 ```
 
-## ValidationRuleSet
+## `Guardian.RuleSet`
 
 ```apex
 public class SuperValidationRuleSet extends Guardian.RuleSet {
@@ -31,18 +31,18 @@ public class SuperValidationRuleSet extends Guardian.RuleSet {
 }
 ```
 
-### Run your validations with the `ValidationRuleSet.validate` method
+### Run your validations with the `Guardian.RuleSet`'s `validate` method
 
 #### Arguments
 * Object subject - The object to be validated
-* Map<String, Object> args - Key/Value args that will be passed into every `ValidationRule`.  
-  Only required if a `ValiationRule` depends on it.
+* Map<String, Object> args - Key/Value args that will be passed into every `Guardian.IRule`.  
+  Only required if a `Guardian.IRule` depends on it.
 
 #### Returns
-* `Guardian.ValidationResult`
+* `Guardian.Result`
   * `hasInvalid` - Boolean
-  * `validSubjects` - List of subjects that passed every `ValidationRule`
-  * `invalidSubjects` - List of subjects that failed one or more `ValidationRule`
+  * `validSubjects` - List of subjects that passed every `Guardian.IRule`
+  * `invalidSubjects` - List of subjects that failed one or more `Guardian.IRule`
     * Each subject is wrapped in the `Guardian.Invalid` object that provides the validation error 
       messages
 
