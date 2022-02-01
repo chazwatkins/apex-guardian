@@ -77,3 +77,31 @@ public class RandomCaller {
   }
 }
 ```
+
+## `Guardian.Multi` - Run validations for multiple object types
+
+```apex
+List<Account> myAccounts = ...;
+List<Opportunity> myOpps = ...;
+
+
+Map<System.Type, List<Object>> ruleSets =
+  new Map<System.Type, List<Object>>{
+    AccountRuleSet.class => myAccounts,
+    OpportunityRuleSet.class => myOpps
+  };
+
+Guardian.Multi multiGuardian = new Guardian.Multi(ruleSets);
+
+Map<String, Object> args = new Map<String, Object>{
+  'validAccountNames' => new Set<String>{'Acme'},
+  'validOpportunityStageNames' => new Set<String>{'New', 'Closed'}
+};
+
+Map<System.Type, Guardian.Result> results = multiGuardian.validate(args);
+
+Guardian.Result accountResults = results.get(AccountRuleSet.class);
+
+List<Account> validAccounts = (List<Account>)accountResults.validSubjects;
+List<Guardian.Invalid> invalidAccounts = accountResults.invalidSubjects;
+```
