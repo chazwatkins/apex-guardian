@@ -37,7 +37,7 @@ public abstract class GuardianRuleSet {
         this.validationRulesInstances;
 
     for (Object subject : subjects) {
-      GuardianSubjectResult validation = new GuardianSubjectResult(
+      GuardianSubject validation = new GuardianSubject(
           subject
       );
       validation.runValidations(args, validationRuleInstances);

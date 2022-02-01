@@ -1,4 +1,4 @@
-public class GuardianSubjectResult {
+public class GuardianSubject {
   public Object subject { get; private set; }
   public List<String> errors { get; private set; }
   public Boolean hasErrors {
@@ -8,7 +8,7 @@ public class GuardianSubjectResult {
     private set;
   }
 
-  public GuardianSubjectResult(Object subject) {
+  public GuardianSubject(Object subject) {
     this.subject = subject;
     this.errors = new List<String>();
   }

@@ -1,15 +1,18 @@
 public abstract class GuardianMulti {
-  public Map<Guardian.RuleSet, List<Object>> ruleSets { get; private set; }
+  public Map<Guardian.RuleSet, List<Object>> ruleSets =
+      new Map<Guardian.RuleSet, List<Object>>();
 
   private Map<Guardian.RuleSet, System.Type> ruleSetTypeByInstance =
       new Map<Guardian.RuleSet, System.Type>();
 
   public GuardianMulti(Map<System.Type, List<Object>> ruleSets) {
-    if(ruleSets.keySet().isEmpty()) {
+    Set<System.Type> ruleSetTypes = ruleSets.keySet();
+
+    if(ruleSetTypes.isEmpty()) {
       throw new NoValidationRuleSetsException();
     }
 
-    for(System.Type ruleSetCls : ruleSets.keySet()) {
+    for(System.Type ruleSetCls : ruleSetTypes) {
       Guardian.RuleSet ruleSetInstance =
           (Guardian.RuleSet) ruleSetCls.newInstance();
 
