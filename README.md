@@ -4,17 +4,16 @@ Simple validation library that allows you to centralize all Apex validations for
 
 ## ValidationRule
 
-
 ```apex
-public class AgeMustBe20OrGreater implements Guardian.IValidationRule {
+public class AgeMustBe20OrGreater implements Guardian.IRule {
   String getErrorMessage() {
     return 'Age must be >= 20';
   }
-  
+
   Boolean validate(Object subject, Map<String, Object> args) {
-    Map<String, Object> subjectRecord = (Map<String, Object>)subject;
-    Integer subjectAge = (Integer)subjectRecord.get('Age');
-    
+    Map<String, Object> subjectRecord = (Map<String, Object>) subject;
+    Integer subjectAge = (Integer) subjectRecord.get('Age');
+
     return subjectAge >= 20;
   }
 }
@@ -23,10 +22,10 @@ public class AgeMustBe20OrGreater implements Guardian.IValidationRule {
 ## ValidationRuleSet
 
 ```apex
-public class SuperValidationRuleSet extends Guardian.ValidationRuleSet {
+public class SuperValidationRuleSet extends Guardian.RuleSet {
   Set<System.Type> getValidationRules() {
     return new Set<System.Type>{
-        AgeMustBe20OrGreater.class
+            AgeMustBe20OrGreater.class
     };
   }
 }
@@ -58,22 +57,23 @@ public class SuperValidationRuleSet extends Guardian.ValidationRuleSet {
 * `validate(List<Object>, Map<String, Object> args)`
 
 ### How to use
+
 ```apex
 public class RandomCaller {
   public static void awesomeMethod(List<SObject> records) {
-    Guardian.ValidationRuleSet ruleSet = new SuperValidationRuleSet();
-    Guardian.ValidationResult validationResult = ruleSet.validate(records);
-    
+    Guardian.RuleSet ruleSet = new SuperValidationRuleSet();
+    Guardian.Result validationResult = ruleSet.validate(records);
+
     SomeOtherClass.processValidRecords(validationResult.validSubjects);
-    
-    if(validationResult.hasInvalid) {
+
+    if (validationResult.hasInvalid) {
       List<Guardian.Invalid> invalidSubjects = validationResult.invalidSubjects;
-      
-      for(Guardian.Invalid invalidSubject : invalidSubjects) {
+
+      for (Guardian.Invalid invalidSubject : invalidSubjects) {
         System.debug(invalidSubject.errors)
       }
     }
-    
+
   }
 }
 ```

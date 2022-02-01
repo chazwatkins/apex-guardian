@@ -5,14 +5,44 @@ private class GuardianTest {
   };
 
   @IsTest
+  static void multiRunsAllRuleSets() {
+    Map<String, Object> testRecord = new Map<String, Object>{
+        'Name' => 'Name Random',
+        'Age' => 19
+    };
+
+    List<Object> testRecords = new List<Object>{testRecord};
+
+    System.Type validationRuleSetOne = TestRuleSetWithValidationRulesNoArgs.class;
+    System.Type validationRuleSetTwo = TestRuleSetWithValidationRules.class;
+
+    Map<System.Type, List<Object>> ruleSets = new Map<System.Type, List<Object>>{
+        validationRuleSetOne => testRecords,
+        validationRuleSetTwo => testRecords
+    };
+
+    Guardian.Multi multiGuardian = new Guardian.Multi(ruleSets);
+    Map<System.Type, Guardian.Result> results = multiGuardian.validate();
+
+    Guardian.Result validationRuleSetOneResults = results.get
+        (validationRuleSetOne);
+
+    Guardian.Result validationRuleSetTwoResults = results.get
+        (validationRuleSetTwo);
+
+    System.assertEquals(1, validationRuleSetOneResults.invalidSubjects.size());
+    System.assertEquals(1, validationRuleSetTwoResults.invalidSubjects.size());
+  }
+
+  @IsTest
   static void subjectWithoutArgsFailingOneValidationReturnsAsInvalidWithOneError() {
     Map<String, Object> testRecord = new Map<String, Object>{
       'Name' => 'Name Random',
       'Age' => 19
     };
 
-    Guardian.ValidationRuleSet testGuardian = new TestRuleSetWithValidationRulesNoArgs();
-    Guardian.ValidationResult result = testGuardian.validate(testRecord);
+    Guardian.RuleSet testGuardian = new TestRuleSetWithValidationRulesNoArgs();
+    Guardian.Result result = testGuardian.validate(testRecord);
 
     System.assertEquals(1, result.invalidSubjects[0].errors.size());
   }
@@ -24,8 +54,8 @@ private class GuardianTest {
       'Age' => 19
     };
 
-    Guardian.ValidationRuleSet testGuardian = new TestRuleSetWithValidationRulesNoArgs();
-    Guardian.ValidationResult result = testGuardian.validate(
+    Guardian.RuleSet testGuardian = new TestRuleSetWithValidationRulesNoArgs();
+    Guardian.Result result = testGuardian.validate(
       new List<Object>{ testRecord }
     );
 
@@ -39,8 +69,8 @@ private class GuardianTest {
       'Age' => 20
     };
 
-    Guardian.ValidationRuleSet testGuardian = new TestRuleSetWithValidationRules();
-    Guardian.ValidationResult result = testGuardian.validate(
+    Guardian.RuleSet testGuardian = new TestRuleSetWithValidationRules();
+    Guardian.Result result = testGuardian.validate(
       testRecord,
       testArgs
     );
@@ -55,8 +85,8 @@ private class GuardianTest {
       'Age' => 19
     };
 
-    Guardian.ValidationRuleSet testGuardian = new TestRuleSetWithValidationRules();
-    Guardian.ValidationResult result = testGuardian.validate(
+    Guardian.RuleSet testGuardian = new TestRuleSetWithValidationRules();
+    Guardian.Result result = testGuardian.validate(
       testRecord,
       testArgs
     );
@@ -73,8 +103,8 @@ private class GuardianTest {
       'Age' => 25
     };
 
-    Guardian.ValidationRuleSet testGuardian = new TestRuleSetWithValidationRules();
-    Guardian.ValidationResult result = testGuardian.validate(
+    Guardian.RuleSet testGuardian = new TestRuleSetWithValidationRules();
+    Guardian.Result result = testGuardian.validate(
       testRecord,
       testArgs
     );
@@ -92,28 +122,28 @@ private class GuardianTest {
     Boolean exceptionThrown = false;
 
     try {
-      Guardian.ValidationRuleSet testGuardian = new TestRuleSetEmpty();
+      Guardian.RuleSet testGuardian = new TestRuleSetEmpty();
       testGuardian.validate(testRecord, testArgs);
-    } catch (Guardian.NoValidationRulesException e) {
+    } catch (GuardianRuleSet.NoValidationRulesException e) {
       exceptionThrown = true;
     }
 
     System.assert(exceptionThrown);
   }
 
-  class TestRuleSetEmpty extends Guardian.ValidationRuleSet {
+  class TestRuleSetEmpty extends Guardian.RuleSet {
     override Set<System.Type> getValidationRules() {
       return new Set<System.Type>{};
     }
   }
 
-  class TestRuleSetWithValidationRulesNoArgs extends Guardian.ValidationRuleSet {
+  class TestRuleSetWithValidationRulesNoArgs extends Guardian.RuleSet {
     override Set<System.Type> getValidationRules() {
       return new Set<System.Type>{ MustBeOlderThan20ValidationRule.class };
     }
   }
 
-  class TestRuleSetWithValidationRules extends Guardian.ValidationRuleSet {
+  class TestRuleSetWithValidationRules extends Guardian.RuleSet {
     override Set<System.Type> getValidationRules() {
       return new Set<System.Type>{
         MustBeOlderThan20ValidationRule.class,
@@ -122,7 +152,7 @@ private class GuardianTest {
     }
   }
 
-  class MustBeOlderThan20ValidationRule implements Guardian.IValidationRule {
+  class MustBeOlderThan20ValidationRule implements Guardian.IRule {
     public String getErrorMessage() {
       return 'Must be older than 20';
     }
@@ -136,7 +166,7 @@ private class GuardianTest {
     }
   }
 
-  class NameMustBeInTheNameList implements Guardian.IValidationRule {
+  class NameMustBeInTheNameList implements Guardian.IRule {
     public String getErrorMessage() {
       return 'Name isn\'t on the List';
     }
